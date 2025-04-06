@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts & Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: white;
+        }
+        header {
+            background-color: #1E1E1E;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        .btn {
+            background-color: #FF5733;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #FF2E00;
+        }
+        .alerts-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .alert-item {
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #FF5733;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚠️ ALΞRTS</h1>
+        <div style="position: fixed; top: 0px; left: 10px;">
+            <a href="index.html" class="btn">⬅️</a>
+          </div>
+    </header>
+    
+    <div class="alerts-container">
+        <h2>📢 Recent Alerts</h2>
+        <div id="alerts-list">
+            <p class="alert-item">Checking for alerts...</p>
+        </div>
+    </div>
+
+    <script>
+        // Simulated alerts data
+        const alerts = [
+            "🚨 Over-speeding detected at 120 km/h!",
+            "⚠️ Harsh braking detected on route 5.",
+            "⛽ Low fuel warning: Only 10% fuel left.",
+            "🔧 Vehicle maintenance required: Oil change overdue.",
+            "📍 Route deviation detected, check your map."
+        ];
+        
+        function loadAlerts() {
+            const alertsList = document.getElementById("alerts-list");
+            alertsList.innerHTML = "";
+            alerts.forEach(alert => {
+                const alertDiv = document.createElement("p");
+                alertDiv.classList.add("alert-item");
+                alertDiv.innerText = alert;
+                alertsList.appendChild(alertDiv);
+            });
+        }
+
+        // Load alerts when page loads
+        loadAlerts();
+    </script>
+</body>
+</html>

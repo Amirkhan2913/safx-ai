@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Mechanics</title>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #f0f4c3, #e6ee9c);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #4a6572;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.2rem;
+        }
+        #status {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #e8f5e9;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        li:hover {
+            transform: translateY(-5px);
+        }
+        .mechanic-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        .mechanic-address, .mechanic-hours, .mechanic-contact, .mechanic-services {
+            margin: 8px 0;
+            color: #555;
+            font-size: 1rem;
+        }
+        .mechanic-distance {
+            color: #1976d2;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        .get-directions {
+            margin-top: 15px;
+        }
+        .get-directions a {
+            background-color: #1976d2;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .get-directions a:hover {
+            background-color: #1565c0;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <h2>Nearby Mechanics</h2>
+    <div style="position: fixed; top: 0px; left: 10px;">
+        <a href="index.html" class="btn">⬅️</a>
+      </div>
+    <p id="status">Fetching your location...</p>
+    <ul id="mechanics-list"></ul>
+</div>
+
+<script>
+    const mechanics = [
+        // Previous Mechanics
+        { name: "Reliable Auto Repair", lat: 19.0190, lng: 72.8315, address: "10, MG Road, Dadar, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9876543210", services: "General Repairs, Tire Services", image: ""},
+        { name: "Quick Fix Motors", lat: 19.0070, lng: 72.8530, address: "22, Sewri East, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9988776655", services: "Engine Repair, Electrical Services", image: ""},
+        { name: "Expert Car Care", lat: 19.0095, lng: 72.8550, address: "5, Messent Road, Mumbai", hours: "24 Hours", contact: "8899001122", services: "All Vehicle Services", image: ""},
+        { name: "City Garage", lat: 19.0200, lng: 72.8400, address: "15, LJ Road, Mahim, Mumbai", hours: "8:00 AM - 8:00 PM", contact: "9876123450", services: "AC Repair, Body Work", image: ""},
+        { name: "Auto Solutions", lat: 18.9800, lng: 72.8200, address: "8, Haji Ali, Mumbai", hours: "9:30 AM - 6:30 PM", contact: "9987654321", services: "Wheel Alignment, Oil Change", image: ""},
+        { name: "Speedy Mechanics", lat: 19.0300, lng: 72.8600, address: "30, Sion Circle, Mumbai", hours: "10:00 AM - 9:00 PM", contact: "9875678901", services: "Brake Repair, Suspension", image: ""},
+        { name: "Mumbai Auto Care", lat: 19.0800, lng: 72.8500, address: "25, Santacruz, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9986789012", services: "Diagnostic Services, Tuning", image: ""},
+        { name: "Worli Auto Works", lat: 19.0100, lng: 72.8250, address: "12, Worli Naka, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9874567890", services: "Transmission, Clutch Repair", image: ""},
+        { name: "Wadala Car Services", lat: 19.0250, lng: 72.8580, address: "40, Wadala West, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9985678901", services: "Radiator, Cooling System", image: ""},
+        { name: "Cotton Green Garage", lat: 18.9950, lng: 72.8650, address: "18, Cotton Green, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9873456789", services: "Fuel System, Injector Cleaning", image: ""},
+        { name: "Bhulabhai Desai Repair", lat: 18.9700, lng: 72.8050, address: "100, Bhulabhai Desai Road, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9984567890", services: "Custom Work, Fabrication", image: ""},
+        { name: "Ballard Estate Autos", lat: 18.9250, lng: 72.8350, address: "42, Ballard Estate, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9872345678", services: "Classic Car Repair, Restoration", image: ""},
+        { name: "Shivaji Maharaj Repair", lat: 18.9200, lng: 72.8360, address: "50, Chhatrapati Shivaji Maharaj Marg, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9983456789", services: "Performance Tuning, Upgrades", image: ""},
+        { name: "Bandra Kurla Mechanics", lat: 19.0650, lng: 72.8680, address: "60, Bandra Kurla Complex, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9871234567", services: "Luxury Car Services, Detailing", image: ""},
+        { name: "Santacruz West Repair", lat: 19.0800, lng: 72.8300, address: "2, Khira Compound, Santacruz West, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9982345678", services: "Hybrid Car Repair, Maintenance", image: ""},
+        { name: "Andheri West Garage", lat: 19.1150, lng: 72.8200, address: "70, Andheri West, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9879012345", services: "Electric Car Repair, Charging Solutions", image: ""},
+        { name: "Colaba Auto Services", lat: 18.9150, lng: 72.8100, address: "73, Colaba, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9980123456", services: "Marine Engine Repair, Boat Services", image: ""},
+        { name: "MS Ali Road Mechanics", lat: 18.9850, lng: 72.8250, address: "323, MS Ali Road, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9878901234", services: "Motorcycle Repair, Servicing", image: ""},
+        { name: "Lamington Road Repair", lat: 18.9700, lng: 72.8270, address: "142, Lamington Road, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9989012345", services: "Scooter Repair, Modifications", image: ""},
+        { name: "Byculla Auto Works", lat: 18.9800, lng: 72.8350, address: "85, Byculla, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9877890123", services: "Truck Repair, Heavy Vehicle Services", image: ""},
+        { name: "Reay Road Garage", lat: 18.9850, lng: 72.8420, address: "116, Reay Road, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9988901234", services: "Bus Repair, Fleet Maintenance", image: ""},
+        { name: "SV Patel Road Services", lat: 18.9650, lng: 72.8290, address: "249, SV Patel Road, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9876789012", services: "Tractor Repair, Farm Equipment", image: ""},
+        { name: "Dr Anand Rao Nair Repair", lat: 18.9880, lng: 72.8260, address: "14A, Dr Anand Rao Nair Road, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9987890123", services: "Generator Repair, Industrial Equipment", image: ""},
+        { name: "Parel Auto Works", lat: 19.0050, lng: 72.8380, address: "186, Parel, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9875678901", services: "Crane Repair, Heavy Machinery", image: ""},
+        { name: "Mulund Garage", lat: 19.1700, lng: 72.9500, address: "80, Mulund, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9986789012", services: "Forklift Repair, Warehouse Equipment", image: ""},
+        { name: "Vikhroli Repair", lat: 19.1150, lng: 72.9300, address: "83, Vikhroli, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9874567890", services: "Construction Equipment Repair, Bulldozers", image: ""},
+        { name: "Ghatkopar Services", lat: 19.0880, lng: 72.9030, address: "86, Ghatkopar, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9985678901", services: "Mining Equipment Repair, Drills", image: ""},
+        { name: "Borivali Auto Works", lat: 19.2280, lng: 72.8540, address: "92, Borivali, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9873456789", services: "Agricultural Equipment Repair, Harvesters", image: ""},
+        { name: "Kandivali Garage", lat: 19.2080, lng: 72.8490, address: "67, Kandivali, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9984567890", services: "Railway Equipment Repair, Locomotives", image: ""},
+        { name: "Kurla Repair", lat: 19.0660, lng: 72.8690, address: "70, Kurla, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9872345678", services: "Aviation Equipment Repair, Aircraft", image: ""},
+        { name: "Chembur Services", lat: 19.0610, lng: 72.9000, address: "71, Chembur, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9983456789", services: "Ship Repair, Marine Services", image: ""},
+        { name: "Bhandup Auto Works", lat: 19.1170, lng: 72.9300, address: "78, Bhandup, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9871234567", services: "Space Equipment Repair, Satellites", image: ""},
+        { name: "Andheri East Garage", lat: 19.1170, lng: 72.8220, address: "93, Andheri East, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9982345678", services: "Robotics Repair, Automation", image: ""},
+        { name: "Goregaon Repair", lat: 19.1550, lng: 72.8490, address: "62, Goregaon, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9879012345", services: "Medical Equipment Repair, Hospital Services", image: ""},
+        { name: "Dadar Services", lat: 19.0180, lng: 72.8300, address: "28, Dadar, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9980123456", services: "Printing Equipment Repair, Industrial Printers", image: ""},
+        { name: "Matunga Auto Works", lat: 19.0180, lng: 72.8300, address: "19, Matunga, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9878901234", services: "Textile Equipment Repair, Weaving Machines", image: ""},
+        { name: "Tardeo Garage", lat: 18.9710, lng: 72.8270, address: "7, Tardeo, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9989012345", services: "Packaging Equipment Repair, Filling Machines", image: ""},
+        { name: "Opera House Repair", lat: 18.9660, lng: 72.8290, address: "4, Opera House, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9877890123", services: "Food Processing Equipment Repair, Mixers", image: ""},
+        { name: "Carnac Bridge Services", lat: 18.9880, lng: 72.8250, address: "3, Carnac Bridge, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9988901234", services: "Pharmaceutical Equipment Repair, Blenders", image: ""},
+        { name: "Ghatkopar Mahul Repair", lat: 19.0610, lng: 72.9000, address: "89, Ghatkopar Mahul, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9876789012", services: "Chemical Equipment Repair, Reactors", image: ""},
+        { name: "Suren Road Garage", lat: 19.1170, lng: 72.8220, address: "93, Suren Road, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9987890123", services: "Plastic Equipment Repair, Molding Machines", image: ""},
+        { name: "Eksar Auto Works", lat: 19.2280, lng: 72.8540, address: "103, Eksar, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9875678901", services: "Rubber Equipment Repair, Extruders", image: ""},
+        { name: "Hill Road Services", lat: 19.0600, lng: 72.8330, address: "50, Hill Road, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9986789012", services: "Ceramic Equipment Repair, Kilns", image: ""},
+        { name: "JVPD Repair", lat: 19.1070, lng: 72.8270, address: "49, JVPD, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9874567890", services: "Glass Equipment Repair, Furnaces", image: ""},
+        { name: "Katrak Road Garage", lat: 19.0250, lng: 72.8580, address: "31, Katrak Road, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9985678901", services: "Woodworking Equipment Repair, Lathes", image: ""},
+        { name: "Ash Lane Auto Works", lat: 19.0180, lng: 72.8300, address: "28, Ash Lane, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9873456789", services: "Metalworking Equipment Repair, Mills", image: ""},
+        { name: "Maheshwari Udyan Services", lat: 19.0180, lng: 72.8300, address: "19, Maheshwari Udyan, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9984567890", services: "Welding Equipment Repair, Arc Welders", image: ""},
+        { name: "Worli Naka Repair", lat: 19.0090, lng: 72.8260, address: "18, Worli Naka, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9872345678", services: "Cutting Equipment Repair, Laser Cutters", image: ""},
+        { name: "Cabinet House Garage", lat: 18.9710, lng: 72.8270, address: "7, Cabinet House, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9983456789", services: "Finishing Equipment Repair, Spray Booths", image: ""},
+        { name: "Mama Parmanand Auto Works", lat: 18.9660, lng: 72.8290, address: "4, Mama Parmanand Marg, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9871234567", services: "Testing Equipment Repair, Calibration", image: ""},
+        { name: "Mohammed Ali Services", lat: 18.9880, lng: 72.8250, address: "3, Mohammed Ali Road, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9982345678", services: "Measurement Equipment Repair, Gauges", image: ""},
+        { name: "Ghatkopar Mahul Repair", lat: 19.0610, lng: 72.9000, address: "89, Ghatkopar Mahul, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9879012345", services: "Control Systems Repair, PLCs", image: ""},
+        { name: "Kurla Suren Road Garage", lat: 19.1170, lng: 72.8220, address: "93, Kurla Suren Road, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9980123456", services: "Automation Systems Repair, SCADA", image: ""},
+        { name: "New Link Road Auto Works", lat: 19.2280, lng: 72.8540, address: "103, New Link Road, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9878901234", services: "Industrial Network Repair, Ethernet", image: ""},
+        { name: "SV Road Hill Road Services", lat: 19.0600, lng: 72.8330, address: "50, SV Road Hill Road, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9989012345", services: "Power Systems Repair, Generators", image: ""},
+        { name: "JR Matre Marg Repair", lat: 19.1070, lng: 72.8270, address: "49, JR Matre Marg, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9877890123", services: "Electrical Systems Repair, Transformers", image: ""},
+        { name: "Katrak Road Garage", lat: 19.0250, lng: 72.8580, address: "31, Katrak Road, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9988901234", services: "HVAC Systems Repair, Chillers", image: ""},
+        { name: "Ash Lane Auto Works", lat: 19.0180, lng: 72.8300, address: "28, Ash Lane, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9876789012", services: "Refrigeration Systems Repair, Freezers", image: ""},
+        { name: "Maheshwari Udyan Services", lat: 19.0180, lng: 72.8300, address: "19, Maheshwari Udyan, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9987890123", services: "Plumbing Systems Repair, Pipes", image: ""},
+        { name: "Dr Annie Besant Road Repair", lat: 19.0090, lng: 72.8260, address: "18, Dr Annie Besant Road, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9875678901", services: "Fire Suppression Systems Repair, Sprinklers", image: ""},
+        // Additional Mechanics
+        { name: "Marine Drive Auto Care", lat: 18.9350, lng: 72.8230, address: "10, Marine Drive, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9876500010", services: "General Repairs, Tire Services", image: ""},
+        { name: "Breach Candy Motors", lat: 18.9600, lng: 72.8090, address: "22, Breach Candy, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9988700055", services: "Engine Repair, Electrical Services", image: ""},
+        { name: "Malabar Hill Car Care", lat: 18.9500, lng: 72.7950, address: "5, Malabar Hill, Mumbai", hours: "24 Hours", contact: "8899000022", services: "All Vehicle Services", image: ""},
+        { name: "Kalbadevi Garage", lat: 18.9450, lng: 72.8350, address: "15, Kalbadevi, Mumbai", hours: "8:00 AM - 8:00 PM", contact: "9876100450", services: "AC Repair, Body Work", image: ""},
+        { name: "Fort Auto Solutions", lat: 18.9300, lng: 72.8380, address: "8, Fort, Mumbai", hours: "9:30 AM - 6:30 PM", contact: "9987600321", services: "Wheel Alignment, Oil Change", image: ""},
+        { name: "Churchgate Mechanics", lat: 18.9250, lng: 72.8330, address: "30, Churchgate, Mumbai", hours: "10:00 AM - 9:00 PM", contact: "9875600901", services: "Brake Repair, Suspension", image: ""},
+        { name: "Cuffe Parade Auto Care", lat: 18.9050, lng: 72.8150, address: "25, Cuffe Parade, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9986700012", services: "Diagnostic Services, Tuning", image: ""},
+        { name: "Nariman Point Auto Works", lat: 18.9200, lng: 72.8200, address: "12, Nariman Point, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9874500890", services: "Transmission, Clutch Repair", image: ""},
+        { name: "Grant Road Car Services", lat: 18.9650, lng: 72.8280, address: "40, Grant Road, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9985600901", services: "Radiator, Cooling System", image: ""},
+        { name: "Tardeo Garage", lat: 18.9710, lng: 72.8270, address: "18, Tardeo, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9873400789", services: "Fuel System, Injector Cleaning", image: ""},
+        { name: "Mumbai Central Repair", lat: 18.9750, lng: 72.8310, address: "100, Mumbai Central, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9984500890", services: "Custom Work, Fabrication", image: ""},
+        { name: "Nagpada Autos", lat: 18.9780, lng: 72.8360, address: "42, Nagpada, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9872300678", services: "Classic Car Repair, Restoration", image: ""},
+        { name: "Dongri Repair", lat: 18.9680, lng: 72.8380, address: "50, Dongri, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9983400789", services: "Performance Tuning, Upgrades", image: ""},
+        { name: "Pydhonie Mechanics", lat: 18.9550, lng: 72.8350, address: "60, Pydhonie, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9871200567", services: "Luxury Car Services, Detailing", image: ""},
+        { name: "Bhendi Bazaar Repair", lat: 18.9600, lng: 72.8320, address: "2, Bhendi Bazaar, Mumbai", hours: "9:00 AM - 7:00 PM", contact: "9982300678", services: "Hybrid Car Repair, Maintenance", image: ""},
+        { name: "Chakala Garage", lat: 19.0950, lng: 72.8500, address: "70, Chakala, Mumbai", hours: "10:30 AM - 6:30 PM", contact: "9879000345", services: "Electric Car Repair, Charging Solutions", image: ""},
+        { name: "Juhu Auto Services", lat: 19.1000, lng: 72.8250, address: "73, Juhu, Mumbai", hours: "9:00 AM - 6:00 PM", contact: "9980100456", services: "Marine Engine Repair, Boat Services", image: ""},
+        { name: "Versova Mechanics", lat: 19.1250, lng: 72.8150, address: "323, Versova, Mumbai", hours: "10:00 AM - 7:00 PM", contact: "9878900234", services: "Motorcycle Repair, Servicing", image: ""},
+        { name: "Lokhandwala Repair", lat: 19.1350, lng: 72.8200, address: "142, Lokhandwala, Mumbai", hours: "11:00 AM - 8:00 PM", contact: "9989000345", services: "Scooter Repair, Modifications", image: ""},
+        { name: "Jogeshwari Auto Works", lat: 19.1450, lng: 72.8300, address: "85, Jogeshwari, Mumbai", hours: "8:30 AM - 5:30 PM", contact: "9877800123", services: "Truck Repair, Heavy Vehicle Services", image: ""},
+];        const mechanicsList = document.getElementById('mechanics-list');
+
+        const status = document.getElementById('status');
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the earth in km
+        const dLat = deg2rad(lat2 - lat1);
+        const dLon = deg2rad(lon2 - lon1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c; // Distance in km
+        return d;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+    }
+
+    function displayMechanics(userLat, userLng) {
+        mechanics.sort((a, b) => {
+            const distA = calculateDistance(userLat, userLng, a.lat, a.lng);
+            const distB = calculateDistance(userLat, userLng, b.lat, b.lng);
+            return distA - distB;
+        });
+
+        mechanicsList.innerHTML = ''; // Clear existing list
+
+        mechanics.forEach(mechanic => {
+            const distance = calculateDistance(userLat, userLng, mechanic.lat, mechanic.lng);
+            const distanceString = distance.toFixed(2);
+
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <div class="mechanic-name">${mechanic.name}</div>
+                <div class="mechanic-address">${mechanic.address}</div>
+                <div class="mechanic-hours">Hours: ${mechanic.hours}</div>
+                <div class="mechanic-contact">Contact: ${mechanic.contact}</div>
+                <div class="mechanic-services">Services: ${mechanic.services}</div>
+                <div class="mechanic-distance">Distance: ${distanceString} km</div>
+                <div class="get-directions">
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${mechanic.lat},${mechanic.lng}" target="_blank">Get Directions</a>
+                </div>
+            `;
+            mechanicsList.appendChild(listItem);
+        });
+        status.textContent = "Mechanics found!";
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            displayMechanics(userLat, userLng);
+        }, () => {
+            status.textContent = "Unable to retrieve your location.";
+            displayMechanics(19.0760, 72.8777); // Default Mumbai location
+        });
+    } else {
+        status.textContent = "Geolocation is not supported by your browser.";
+        displayMechanics(19.0760, 72.8777); // Default Mumbai location
+    }
+</script>
+
+</body>
+</html>

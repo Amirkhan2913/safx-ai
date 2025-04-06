@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Nearest Police Stations</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwJrhXIG-szjuKNtt9COS1xPN8MXhcm0o&libraries=places,geometry"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fce4ec;
+            text-align: center;
+            color: #212121;
+        }
+
+        header {
+            background: #ff4081;
+            color: #212121;
+            padding: 15px;
+            font-size: 24px;
+            text-shadow: 0 0 3px #f8bbd0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        #map {
+            width: 90%;
+            height: 500px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        button {
+            background: #ff80ab;
+            color: #212121;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            background: #f50057;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        #list {
+            width: 90%;
+            margin: 20px auto;
+            padding: 10px;
+            background: #ff80ab;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            text-align: left;
+            color: #212121;
+        }
+
+        .station {
+            padding: 10px;
+            border-bottom: 1px solid #f50057;
+            opacity: 0.9;
+        }
+
+        .station:last-child {
+            border-bottom: none;
+        }
+
+        .directions {
+            color: #212121;
+            text-decoration: none;
+            font-weight: bold;
+            opacity: 1;
+        }
+    </style>
+    <script>
+        let map;
+        let userLocation;
+        let userMarker;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 12,
+                center: { lat: 19.0760, lng: 72.8777 },
+                styles: [
+                    {
+                        featureType: "administrative",
+                        elementType: "labels.text.fill",
+                        stylers: [{ color: "#212121" }],
+                    },
+                    {
+                        featureType: "administrative.land_parcel",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }],
+                    },
+                    {
+                        featureType: "administrative.neighborhood",
+                        stylers: [{ visibility: "off" }],
+                    },
+                    {
+                        featureType: "landscape",
+                        elementType: "geometry",
+                        stylers: [{ color: "#ffffff" }],
+                    },
+                    {
+                        featureType: "poi",
+                        elementType: "geometry",
+                        stylers: [{ color: "#f8bbd0" }],
+                    },
+                    {
+                        featureType: "road",
+                        elementType: "geometry",
+                        stylers: [{ color: "#ffebee" }],
+                    },
+                    {
+                        featureType: "road",
+                        elementType: "geometry.stroke",
+                        stylers: [{ color: "#f06292" }],
+                    },
+                    {
+                        featureType: "road",
+                        elementType: "labels.text.fill",
+                        stylers: [{ color: "#212121" }],
+                    },
+                    {
+                        featureType: "road.highway",
+                        elementType: "geometry",
+                        stylers: [{ color: "#ffcdd2" }],
+                    },
+                    {
+                        featureType: "road.highway",
+                        elementType: "geometry.stroke",
+                        stylers: [{ color: "#f06292" }],
+                    },
+                    {
+                        featureType: "road.highway",
+                        elementType: "labels.text.fill",
+                        stylers: [{ color: "#212121" }],
+                    },
+                    {
+                        featureType: "transit",
+                        elementType: "geometry",
+                        stylers: [{ color: "#ffffff" }],
+                    },
+                    {
+                        featureType: "transit.station",
+                        elementType: "labels.text.fill",
+                        stylers: [{ color: "#212121" }],
+                    },
+                    {
+                        featureType: "water",
+                        elementType: "geometry",
+                        stylers: [{ color: "#ffebee" }],
+                    },
+                    {
+                        featureType: "water",
+                        elementType: "labels.text.fill",
+                        stylers: [{ color: "#212121" }],
+                    },
+                    {
+                        featureType: 'road',
+                        elementType: 'labels.text.stroke',
+                        stylers: [{ color: '#ffebee' }]
+                    },
+                    {
+                        featureType: 'road',
+                        elementType: 'labels.text.fill',
+                        stylers: [{ color: '#212121' }]
+                    }
+                ],
+            });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(userLocation);
+                    userMarker = new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: "Your Location",
+                        icon: {
+                            url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                        }
+                    });
+                }, () => {
+                    alert("Geolocation failed. Default location used.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showNearestPoliceStations() {
+            const policeStations = [
+                { name: "Vanrai Police Station", lat: 19.1571, lng: 72.8613 },
+                { name: "Bangur Nagar Police Station", lat: 19.1805, lng: 72.8251 },
+                { name: "Meghwadi Police Station", lat: 19.1203, lng: 72.8776 },
+                { name: "Bandra Police Station", lat: 19.0595, lng: 72.8295 },
+                { name: "Vakola Police Station", lat: 19.0881, lng: 72.8461 },
+                { name: "Ghatkopar Police Station", lat: 19.0853, lng: 72.9093 },
+                { name: "Chembur Police Station", lat: 19.0610, lng: 72.9000 },
+                { name: "Dadar Police Station", lat: 19.0204, lng: 72.8410 },
+                { name: "Tardeo Police Station", lat: 18.9692, lng: 72.8100 },
+                { name: "Colaba Police Station", lat: 18.9067, lng: 72.8146 },
+                { name: "Dindoshi Police Station", lat: 19.1764, lng: 72.8631 },
+                { name: "Kurar Police Station", lat: 19.2081, lng: 72.8517 },
+                { name: "Samta Nagar Police Station", lat: 19.2139, lng: 72.8687 },
+                { name: "Kasturba Marg Police Station", lat: 19.2248, lng: 72.8767 },
+                { name: "Dahisar Police Station", lat: 19.2384, lng: 72.8596 },
+                { name: "Aarey Police Station", lat: 19.1528, lng: 72.8879 },
+                { name: "M.H.B. Colony Police Station", lat: 19.2274, lng: 72.8354 },
+                { name: "Gorai Police Station", lat: 19.2285, lng: 72.8091 },
+                { name: "Goregaon Police Station", lat: 19.1578, lng: 72.8447 },
+                { name: "Malad Police Station", lat: 19.1895, lng: 72.8197 },
+                { name: "Malvani Police Station", lat: 19.1994, lng: 72.8000 },
+                { name: "Borivali Police Station", lat: 19.2319, lng: 72.8491 },
+                { name: "Kandivali Police Station", lat: 19.2091, lng: 72.8335 },
+                { name: "Charkop Police Station", lat: 19.2017, lng: 72.8091 },
+                { name: "Jogeshwari Police Station", lat: 19.1360, lng: 72.8488 },
+                { name: "Andheri Police Station", lat: 19.1172, lng: 72.8465 },
+                { name: "Sakinaka Police Station", lat: 19.1028, lng: 72.8885 },
+                { name: "Powai Police Station", lat: 19.1235, lng: 72.9099 },
+                { name: "MIDC Police Station", lat: 19.1006, lng: 72.8711 },
+                { name: "Oshiwara Police Station", lat: 19.1413, lng: 72.8306 },
+                { name: "Amboli Police Station", lat: 19.1130, lng: 72.8273 },
+                { name: "Khar Police Station", lat: 19.0664, lng: 72.8329 },
+                { name: "Santacruz Police Station", lat: 19.0761, lng: 72.8384 },
+                { name: "Juhu Police Station", lat: 19.0967, lng: 72.8275 },
+                { name: "DN Nagar Police Station", lat: 19.1238, lng: 72.8188 },
+                { name: "Versova Police Station", lat: 19.1287, lng: 72.8139 },
+                { name: "Sahar Police Station", lat: 19.0913, lng: 72.8681 },
+                { name: "Airport Police Station", lat: 19.0887, lng: 72.8696 },
+                { name: "BKC Police Station", lat: 19.0558, lng: 72.8596 },
+                { name: "Nirmal Nagar Police Station", lat: 19.0526, lng: 72.8530 },
+                { name: "Kherwadi Police Station", lat: 19.0631, lng: 72.8427 },
+                { name: "Pantnagar Police Station", lat: 19.0832, lng: 72.9157 },
+                { name: "Vikhroli Police Station", lat: 19.1081, lng: 72.9304 },
+                { name: "Kanjurmarg Police Station", lat: 19.1166, lng: 72.9360 },
+                { name: "Bhandup Police Station", lat: 19.1345, lng: 72.9404 },
+                { name: "Mulund Police Station", lat: 19.1627, lng: 72.9567 },
+                { name: "Parksite Police Station", lat: 19.1432, lng: 72.9461 },
+                { name: "Navghar Police Station", lat: 19.1311, lng: 72.9610 },
+                { name: "Shivaji Nagar Police Station", lat: 19.0494, lng: 72.9160 },
+                { name: "RCF Police Station", lat: 19.0435, lng: 72.8948 },
+                { name: "Deonar Police Station", lat: 19.0520, lng: 72.8872 },
+                { name: "Trombay Police Station", lat: 18.9959, lng: 72.8953 },
+                { name: "Tilak Nagar Police Station", lat: 19.0416, lng: 72.9038 },
+                { name: "Chunabhatti Police Station", lat: 19.0463, lng: 72.8761 },
+                { name: "Mankhurd Police Station", lat: 19.0298, lng: 72.9238 },
+                { name: "Govandi Police Station", lat: 19.0319, lng: 72.9118 },
+                { name: "Nehru Nagar Police Station", lat: 19.0682, lng: 72.9016 },
+                { name: "Kurla Police Station", lat: 19.0715, lng: 72.8967 },
+                { name: "Dharavi Police Station", lat: 19.0381, lng: 72.8504 },
+                { name: "Vinoba Bhave Nagar Police Station", lat: 19.0620, lng: 72.8874 },
+                { name: "Shahu Nagar Police Station", lat: 19.0287, lng: 72.8596 },
+                { name: "Mahim Police Station", lat: 19.0345, lng: 72.8468 },
+                { name: "Shivaji Park Police Station", lat: 19.0267, lng: 72.8364 },
+                { name: "Matunga Police Station", lat: 19.0232, lng: 72.8517 },
+                { name: "Sion Police Station", lat: 19.0366, lng: 72.8642 },
+                { name: "RAK Marg Police Station", lat: 19.0069, lng: 72.8625 },
+                { name: "Antop Hill Police Station", lat: 19.0189, lng: 72.8687 },
+                { name: "Wadala Truck Terminal Police Station", lat: 19.0118, lng: 72.8693 },
+                { name: "Bhoiwada Police Station", lat: 18.9996, lng: 72.8475 },
+                { name: "Kalachowki Police Station", lat: 18.9936, lng: 72.8427 },
+                { name: "Pydhonie Police Station", lat: 18.9566, lng: 72.8354 },
+                { name: "LT Marg Police Station", lat: 18.9540, lng: 72.8315 },
+                { name: "VP Road Police Station", lat: 18.9587, lng: 72.8273 },
+                { name: "DB Marg Police Station", lat: 18.9749, lng: 72.8188 },
+                { name: "Gamdevi Police Station", lat: 18.9620, lng: 72.8157 },
+                { name: "Malabar Hill Police Station", lat: 18.9555, lng: 72.8041 },
+                { name: "Nagpada Police Station", lat: 18.9715, lng: 72.8291 },
+                { name: "Agripada Police Station", lat: 18.9781, lng: 72.8251 },
+                { name: "Byculla Police Station", lat: 18.9859, lng: 72.8351 },
+                { name: "Worli Police Station", lat: 19.0067, lng: 72.8180 },
+                { name: "NM Joshi Marg Police Station", lat: 18.9912, lng: 72.8267 },
+                { name: "Tardeo Police Station", lat: 18.9692, lng: 72.8100 },
+                { name: "Yellow Gate Police Station", lat: 18.9328, lng: 72.8398 },
+                { name: "Wadala Police Station", lat: 19.0132, lng: 72.8596 },
+                { name: "Sewree Police Station", lat: 18.9882, lng: 72.8522 },
+                { name: "Marine Drive Police Station", lat: 18.9366, lng: 72.8247 },
+                { name: "Azad Maidan Police Station", lat: 18.9351, lng: 72.8347 },
+                { name: "MR A Marg Police Station", lat: 18.9392, lng: 72.8384 },
+                { name: "Dongri Police Station", lat: 18.9564, lng: 72.8397 },
+                { name: "Sir JJ Marg Police Station", lat: 18.9482, lng: 72.8384 },
+                { name: "Cuffe Parade Police Station", lat: 18.9022, lng: 72.8104 },
+                { name: "Colaba Police Station", lat: 18.9067, lng: 72.8146 },
+            ];
+
+            if (!userLocation) {
+                alert("Please wait for geolocation to load.");
+                return;
+            }
+
+            const stationsWithDistance = policeStations.map(station => {
+                const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                    new google.maps.LatLng(userLocation.lat, userLocation.lng),
+                    new google.maps.LatLng(station.lat, station.lng)
+                );
+                return { ...station, distance };
+            });
+
+            stationsWithDistance.sort((a, b) => a.distance - b.distance);
+
+            document.getElementById('list').innerHTML = "";
+            stationsWithDistance.forEach(station => {
+                new google.maps.Marker({
+                    position: { lat: station.lat, lng: station.lng },
+                    map: map,
+                    title: station.name,
+                    icon: "http://maps.google.com/mapfiles/ms/icons/police.png"
+                });
+
+                const listItem = document.createElement("div");
+                listItem.classList.add("station");
+                listItem.innerHTML = `
+                    <strong>${station.name}</strong><br>
+                    Distance: ${(station.distance / 1000).toFixed(2)} km<br>
+                    <a class='directions' target='_blank' href='https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}'>Get Directions</a>
+                `;
+                document.getElementById('list').appendChild(listItem);
+            });
+        }
+    </script>
+</head>
+<body onload="initMap()">
+    <header>Find Nearest Police Stations</header>
+    <button onclick="showNearestPoliceStations()">Show Nearest Police Stations</button>
+    <div id="map"></div>
+    <div id="list"></div>
+</body>
+</html>
+
+
+
+

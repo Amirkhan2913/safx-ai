@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIVΞ WΞATHΞR INFОRMATIОN</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="weather.js"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #1E1E1E;
+            padding: 15px 20px;
+            width: 100%;
+            text-align: center;
+            border-bottom: 2px solid #FF5733;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #FF5733;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
+            text-align: center;
+            padding: 20px;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .weather-info {
+            margin-top: 20px;
+        }
+
+        .weather-info h2 {
+            font-size: 26px;
+        }
+
+        .weather-info p {
+            font-size: 20px;
+            margin: 5px 0;
+        }
+
+        .driving-alert {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        /* Spinner for loading weather */
+        .spinner {
+            margin-top: 20px;
+            border: 4px solid transparent;
+            border-top: 4px solid #FF5733;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="position: fixed; top: 10px; left: 10px;">
+            <a href="index.html" class="btn">⬅️</a>
+          </div>
+        <h1>🌦️LIVΞ WΞATHΞR INFОRMATIОN</h1>
+    </header>
+    
+    <div class="container">
+        <div id="weather" class="weather-info">
+            <h2>Getting your location...</h2>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Weather data provided by OpenWeatherMap.</p>
+    </div>
+
+    <script>
+        const apiKey = "faf8575c8fb622febe2011dce41b4200"; // Replace with your OpenWeatherMap API key
+
+        // Function to fetch weather data based on latitude and longitude
+        async function getWeather(lat, lon) {
+            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.cod !== 200) {
+                    document.getElementById("weather").innerHTML = `<p>Could not retrieve weather data. Please try again later.</p>`;
+                    return;
+                }
+
+                // Update the weather info
+                document.getElementById("weather").innerHTML = ` 
+                    <h2>Weather for ${data.name}, ${data.sys.country}</h2>
+                    <p>Temperature: ${data.main.temp}°C</p>
+                    <p>Condition: ${data.weather[0].description}</p>
+                    <p>Humidity: ${data.main.humidity}%</p>
+                `;
+
+                // Provide a fixed driving alert
+                displayDrivingAlert();
+
+            } catch (error) {
+                document.getElementById("weather").innerHTML = `<p>Error fetching data. Please try again later.</p>`;
+            }
+        }
+
+        // Function to display a fixed driving condition
+        function displayDrivingAlert() {
+            const alertMessage = "☀️ Clear weather. Ideal for driving!";
+            const drivingCondition = "Best";
+
+            // Display the driving condition
+            let alertDiv = document.querySelector('.driving-alert');
+            if (!alertDiv) {
+                alertDiv = document.createElement('div');
+                alertDiv.classList.add('driving-alert');
+                document.body.appendChild(alertDiv);
+            }
+            alertDiv.innerText = `Driving condition: ${drivingCondition} - ${alertMessage}`;
+        }
+
+        // Get the user's current location and fetch the weather
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    getWeather(lat, lon);
+                }, error => {
+                    document.getElementById("weather").innerHTML = `<p>Failed to get location. Please enable location services.</p>`;
+                });
+            } else {
+                document.getElementById("weather").innerHTML = `<p>Geolocation is not supported by this browser.</p>`;
+            }
+        }
+
+        // Start the process of getting location and weather
+        getLocation();
+    </script>
+
+</body>
+</html>

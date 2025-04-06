@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: white;
+        }
+        header {
+            background-color: #1E1E1E;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        .btn {
+            background-color: #FF5733;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #FF2E00;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+        .status {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .status h3 {
+            margin: 5px 0;
+        }
+    </style>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCwJrhXIG-szjuKNtt9COS1xPN8MXhcm0o&callback=initMap"></script>
+</head>
+<body>
+    <header>
+        <h1>📍 Live Location Tracking</h1>
+        <div style="position: fixed; top: 0px; left: 10px;">
+            <a href="index.html" class="btn">⬅️</a>
+          </div>
+    </header>
+    
+    <div id="map"></div>
+
+    <div class="status">
+        <h3>Current Speed: <span id="speed">0</span> km/h</h3>
+        <h3>Latitude: <span id="latitude">N/A</span></h3>
+        <h3>Longitude: <span id="longitude">N/A</span></h3>
+    </div>
+
+    <script>
+        let map, marker;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: { lat: 0, lng: 0 }
+            });
+            
+            marker = new google.maps.Marker({
+                position: { lat: 0, lng: 0 },
+                map: map,
+                title: "Your Location"
+            });
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(updatePosition, handleError, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function updatePosition(position) {
+            let lat = position.coords.latitude;
+            let lng = position.coords.longitude;
+            let speed = position.coords.speed ? (position.coords.speed * 3.6).toFixed(2) : "Calculating...";
+
+            let newPos = { lat, lng };
+            map.setCenter(newPos);
+            marker.setPosition(newPos);
+
+            document.getElementById("latitude").innerText = lat.toFixed(5);
+            document.getElementById("longitude").innerText = lng.toFixed(5);
+            document.getElementById("speed").innerText = speed;
+
+            if (speed !== "Calculating..." && parseFloat(speed) > 80) {
+                alert("Warning: You are exceeding the speed limit of 80 km/h!");
+            }
+        }
+
+        function handleError(error) {
+            console.error("Error getting location:", error);
+            alert("Error retrieving location. Please enable GPS.");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Fuel Stations</title>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #c2e5f0);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.2rem;
+        }
+        #status {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #f0f8ff;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        li:hover {
+            transform: translateY(-5px);
+        }
+        .station-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+        .station-address, .station-hours, .station-contact, .station-fuel {
+            margin: 8px 0;
+            color: #555;
+            font-size: 1rem;
+        }
+        .station-distance {
+            color: #3498db;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        .get-directions {
+            margin-top: 15px;
+        }
+        .get-directions a {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .get-directions a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <h2>Nearby Fuel Stations</h2>
+    <div style="position: fixed; top: 0px; left: 10px;">
+        <a href="index.html" class="btn">⬅️</a>
+      </div>
+    <p id="status">Fetching your location...</p>
+    <ul id="stations-list"></ul>
+</div>
+
+<script>
+    const petrolPumps = [
+        { name: "Hpcl - Highway Automobiles", lat: 19.0886, lng: 72.9037, address: "lbs marg ghatkopar mumbai , ghatkopar, 400086, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2225131065", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Manhas Auto Service", lat: 19.0063, lng: 72.8525, address: "acharya donde marg sewri mumbai , sewri, 400015, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "2224132434", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Shaheed Bapurao Dhurgude Autowork", lat: 19.0089, lng: 72.8542, address: "ground floor messent road mumbai, messent road, 400015, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9967715902", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bharucha Auto Service", lat: 19.0305, lng: 72.8407, address: "sitladevi temple road junction mahim mumbai , mahim, 400016, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820279913", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bp Churchgate", lat: 18.9298, lng: 72.8273, address: "no 89, cci, churchgate veer nariman road mumbai -, veer nariman road, 400020, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9594262419", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Express Services Qr", lat: 18.9304, lng: 72.8273, address: "no 107 a, queens road churchgate mumbai , churchgate, 400020, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "9867245225", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Desai Auto Service", lat: 19.0379, lng: 72.8596, address: "no 30, sion circle sion mumbai, sion, 400022, maharashtra", hours: "07:00 AM - 07:00 PM", contact: "8108589666", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Noble Motors", lat: 18.9772, lng: 72.8123, address: "ground floor haji ali mumbai , haji ali, 400026, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9821513807", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - New Kampala S. Station", lat: 18.9782, lng: 72.8139, address: "plot no cs 744 peddar road mumbai , peddar road, 400026, maharashtra", hours: "06:00 AM - 11:00 PM", contact: "9870438913", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bombay Petroleums", lat: 19.0183, lng: 72.8305, address: "r g gadkari chowk, shivaji park dadar mumbai , dadar, 400028, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9892192883", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Lakhbir Automobiles", lat: 19.0844, lng: 72.8517, address: "sg barve marg santacruz mumbai , santacruz, 400029, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820093029", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Ravi Auto Services", lat: 19.0094, lng: 72.8268, address: "plot no 271, dr annie besant road worli mumbai , worli, 400030, maharashtra", hours: "07:00 AM - 09:00 PM", contact: "2224222422", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Uganda Service Station", lat: 19.0259, lng: 72.8580, address: "plot no 44, rafi ahmed kidwai road wadala west mumbai , wadala west, 400031, maharashtra", hours: "05:30 AM - 11:59 PM", contact: "2224125752", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Gill Auto Service", lat: 18.9959, lng: 72.8643, address: "ground floor cotton green mumbai, cotton green, 400033, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9820037225", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Kenia Automobiles", lat: 18.9939, lng: 72.8673, address: "1st avenue, boundary rd, cotton green east sewri west mumbai , sewri west, 400033, maharashtra", hours: "06:30 AM - 09:30 PM", contact: "2223725085", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Dayaram Santdas & Co", lat: 18.9723, lng: 72.8058, address: "plot no 100a bhulabhai desai road mumbai, bhulabhai desai road, 400036, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2223649841", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Daulat Automobiles", lat: 18.9272, lng: 72.8340, address: "plot no 42, ramjibhai kamani marg ballard estate mumbai , ballard estate, 400038, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820086843", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Gateway Auto Services", lat: 18.9221, lng: 72.8360, address: "ground floor ch shivaji maharaj marg mumbai , ch shivaji maharaj marg, 400039, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9004047334", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bp-bandra Kurla Complex", lat: 19.0664, lng: 72.8687, address: "plot no pp 2, bandra kurla complex, block 6, g tex bandra east mumbai , bandra east, 400051, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9322656814", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - New Kampala S. Station Adhoc", lat: 19.0805, lng: 72.8329, address: "plot no 2, tps 5, khira compound santacruz west mumbai , santacruz west, 400054, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "2226601165", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Om Siddheshwari Fuel World", lat: 19.1179, lng: 72.8228, address: "sv road, irla signal, bharucha baug andheri west mumbai, andheri west, 400058, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9967862895", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Express Petroleum Colaba", lat: 18.9174, lng: 72.8123, address: "no 73, sb singh road colaba mumbai , colaba, 400005, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9867245225", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Raj Automobiles", lat: 18.9880, lng: 72.8258, address: "no 323, m shaukat ali road ms ali road mumbai, ms ali road, 400007, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9967436893", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - United Motors India Pvt Ltd.", lat: 18.9890, lng: 72.8268, address: "no 39 a n sitaram patkar marg mumbai, n sitaram patkar marg, 400007, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820384007", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Modern Service Station", lat: 18.9715, lng: 72.8273, address: "no 142 lamington road mumbai, lamington road, 400007, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "9167409088", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Patel Brothers", lat: 18.9822, lng: 72.8353, address: "ground floor, sir jj road byculla mumbai, byculla, 400008, maharashtra", hours: "07:00 AM - 10:00 PM", contact: "2223081778", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Varma Automobiles", lat: 18.9814, lng: 72.8360, address: "plot no 85 frere road mumbai , frere road, 400009, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9867750009", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Sethi Automobiles", lat: 18.9856, lng: 72.8427, address: "no 116 reay road mumbai , reay road, 400010, maharashtra", hours: "06:00 AM - 11:00 PM", contact: "9819206950", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Dipti Petroleum", lat: 18.9272, lng: 72.8340, address: "ground floor, ramjibhai kamani marg ballard estate mumbai , ballard estate, 400001, maharashtra", hours: "06:00 AM - 10:00 PM", contact: "9821316279", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - General Auto Service", lat: 18.9669, lng: 72.8298, address: "plot no no 247 & 249 sv patel road mumbai, sv patel road, 400004, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "9769188556", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Liberty Automobiles", lat: 18.9189, lng: 72.8123, address: "no 115, colaba causeway, sbs road colaba mumbai , colaba, 400005, maharashtra", hours: "06:00 AM - 10:00 PM", contact: "9833372770", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Vijay Service Station", lat: 18.9856, lng: 72.8427, address: "no 225 reay road mumbai , reay road, 400010, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9819320328", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Sardar Auto Mobile", lat: 18.9890, lng: 72.8268, address: "no 14a dr anand rao nair road mumbai , dr anand rao nair road, 400011, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "7700089150", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Shetkari Sahkari Sangh Ltd", lat: 19.0064, lng: 72.8390, address: "ground floor, jerbai wadia road parel mumbai , parel, 400012, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "2224126872", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Shetty Auto Service", lat: 19.0183, lng: 72.8305, address: "no 186, tata oil mills compound, baba saheb ambedkar road dadar east mumbai, dadar east, 400014, maharashtra", hours: "07:00 AM - 11:59 PM", contact: "9920717176", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Chheda Service Station", lat: 19.1730, lng: 72.9510, address: "ground floor, lbs marg mulund mumbai , mulund, 400080, maharashtra", hours: "06:00 AM - 10:00 PM", contact: "2225601780", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Vikhroli Automobiles", lat: 19.1179, lng: 72.9304, address: "ground floor, powai rd junction, agra road shastri marg mumbai , shastri marg, 400083, maharashtra", hours: "07:00 AM - 11:00 PM", contact: "2225781755", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Highway Automobiles Ghatkopar", lat: 19.0886, lng: 72.9037, address: "lbs marg ghatkopar mumbai, ghatkopar, 400086, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9821036022", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Borivali Petrol Supply", lat: 19.2288, lng: 72.8544, address: "sv road borivali west mumbai , borivali west, 400092, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820106732", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Famous Auto Service Station", lat: 19.2288, lng: 72.8544, address: "plot no 1, survey no 7, kapadia baug borivali west mumbai , borivali west, 400092, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "2228053849", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Om Vedant Petroleum", lat: 19.1179, lng: 72.8228, address: "survey no 9, cts 1 d, vadavali andheri east mumbai , andheri east, 400093, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9594420990", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bajrang Auto Service", lat: 19.1179, lng: 72.8228, address: "marol naka andheri east mumbai , andheri east, 400059, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9869412271", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Goregaon Petrol Supply Co", lat: 19.1551, lng: 72.8494, address: "sv road junction, aarey road goregaon west mumbai , goregaon west, 400062, maharashtra", hours: "05:30 AM - 11:30 PM", contact: "2228724530", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bharat Industrial Compound", lat: 19.1551, lng: 72.8494, address: "bharat industrial compound goregaon west mumbai , goregaon west, 400062, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2228759111", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Charkop Petroleum", lat: 19.2081, lng: 72.8498, address: "charkop industrial area kandivali west, sector 6 mumbai, kandivali west, sector 6, 400067, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9619731110", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Dashmesh Automobiles", lat: 19.0666, lng: 72.8697, address: "ground floor kurla mumbai, kurla, 400070, maharashtra", hours: "06:00 AM - 10:00 PM", contact: "9022229149", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bahri Auto Service", lat: 19.0618, lng: 72.9001, address: "plot no 2, vn purav marg chembur mumbai, chembur, 400071, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9869069447", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Auro Petroleum Centre", lat: 19.0618, lng: 72.9001, address: "plot no 305, sion trombay road chembur mumbai , chembur, 400071, maharashtra", hours: "07:00 AM - 11:59 PM", contact: "9322335976", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Radiant Petroleum Products Pvt Ltd", lat: 19.0618, lng: 72.9001, address: "sion trombay road chembur mumbai , chembur, 400071, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820634815", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Police Fuel Station", lat: 19.0886, lng: 72.9037, address: "eastern expressway hwy, pantnagar, railway police colony ghatkopar east mumbai , ghatkopar east, 400075, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "7777064282", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Kaka Automobiles", lat: 19.1179, lng: 72.9304, address: "agra road, janta market bhandup mumbai , bhandup, 400078, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "7021723340", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Godrej & Boyce Mfg.co.pvt Ltd.", lat: 19.1179, lng: 72.9304, address: "vikhroli prijosha nagar mumbai, prijosha nagar, 400079, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2267963545", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Om Lalita Petroleum", lat: 19.2288, lng: 72.8544, address: "plot no cts 1208, new link road, eksar borivali west mumbai , borivali west, 400103, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9029703100", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl -taximens Services Ltd -a-c Bandra", lat: 19.0600, lng: 72.8333, address: "sv road, junction of hill road bandra west mumbai, bandra west, 400050, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9969326657", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Prakash Automobiles, A-c Jvpd", lat: 19.1076, lng: 72.8270, address: "jr matre marg jvpd scheme mumbai , jvpd scheme, 400049, maharashtra", hours: "07:00 AM - 07:00 PM", contact: "9821498999", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Satguru Automobiles -a-c Wadala", lat: 19.0259, lng: 72.8580, address: "plot no 711, katrak road wadala mumbai, wadala, 400031, maharashtra", hours: "07:00 AM - 11:59 PM", contact: "9820145924", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - National Petrol Co -a-c Dadar", lat: 19.0183, lng: 72.8305, address: "ground floor, ash lane dadar mumbai, dadar, 400028, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9820012100", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Amar Automobiles -a-c Maheshwari Ud", lat: 19.0183, lng: 72.8305, address: "plot no 362 matunga mumbai, matunga, 400019, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9821083651", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Worliway Service Station A-c Plot 8", lat: 19.0094, lng: 72.8268, address: "plot no 87, dr annie besant road worli naka mumbai, worli naka, 400018, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9892567947", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Petroleum & Minerals Pvt Ltd A-c T", lat: 18.9715, lng: 72.8273, address: "plot no 249, cabinet house tardeo road mumbai , tardeo road, 400007, maharashtra", hours: "07:00 AM - 10:30 PM", contact: "2223802555", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Jb Patel & Co-a-c Mama P Rd", lat: 18.9669, lng: 72.8298, address: "plot no 128, opera house, mama parmanand marg new queens road mumbai , new queens road, 400004, maharashtra", hours: "07:00 AM - 11:59 PM", contact: "9867118660", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Petroleum & Minerals Pvt Ltd -a-c P", lat: 18.9880, lng: 72.8258, address: "mohammed ali road carnac bridge mumbai , carnac bridge, 400003, maharashtra", hours: "07:00 AM - 10:30 PM", contact: "2223454436", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Shah Petroleum Products A-c Chembur", lat: 19.0618, lng: 72.9001, address: "ground floor, ghatkopar mahul road chembur mumbai , chembur, 400089, maharashtra", hours: "12:00 AM - 11:00 PM", contact: "2225258515", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Gurunanak Automobiles, A-c Andheri", lat: 19.1179, lng: 72.8228, address: "kurla suren road junction andheri east mumbai , andheri east, 400093, maharashtra", hours: "12:00 AM - 11:59 PM", contact: "9833814258", fuel: "PetrolDiesel", image: "",},
+        { name: "Reliance-petrol Pump (sector 18, Sanpada)", lat: 19.0366, lng: 73.0189, address: "plot no 7, off palm beach marg, navi mumbai sector 18, sanpada navi mumbai, sector 18, sanpada, 400706, maharashtra", hours: "06:00 AM - 05:59 AM", contact: "", fuel: "PetrolDiesel", image: "",},
+        { name: "Reliance-petrol Pump (jasai)", lat: 18.8872, lng: 72.9439, address: "survey no 132, h no 5, uran jasai navi mumbai, jasai, 410210, maharashtra", hours: "06:00 AM - 05:59 AM", contact: "9324220111", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Universal Auto", lat: 19.1558, lng:72.8273, address: "sv road, near goregaon sports club goregaon west mumbai , goregaon west, 400062, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820061596", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Laxmi Petroleum", lat: 19.1911, lng: 72.8447, address: "sv road kandivali west mumbai , kandivali west, 400067, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820061596", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bharat Petroleum", lat: 19.2288, lng: 72.8544, address: "sv road borivali west mumbai , borivali west, 400091, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820061596", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bharat Petroleum", lat: 19.2288, lng: 72.8544, address: "sv road borivali west mumbai , borivali west, 400092, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820061596", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bharat Petroleum", lat: 19.2288, lng: 72.8544, address: "sv road borivali west mumbai , borivali west, 400103, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820061596", fuel: "PetrolDiesel", image: "",},
+        { name: "Bpcl - Bharat Petroleum", lat: 19.2288, lng: 72.8544, address: "sv road borivali west mumbai , borivali west, 400101, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "9820061596", fuel: "PetrolDiesel", image: "",},
+        { name: "Hpcl - Sai Service Station", lat: 19.0149, lng: 72.8475, address: "plot no 264, lj road mahim mumbai , mahim, 400016, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2224467073", fuel: "PetrolDiesel", image: "",},
+        { name: "Hpcl - National Petrol Co", lat: 19.0183, lng: 72.8305, address: "ash lane dadar mumbai , dadar, 400028, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2224132030", fuel: "PetrolDiesel", image: "",},
+        { name: "Hpcl - Highway Automobiles", lat: 19.0886, lng: 72.9037, address: "lbs marg ghatkopar mumbai , ghatkopar, 400086, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2225131065", fuel: "PetrolDiesel", image: "",},
+        { name: "Hpcl - Goregaon Petrol Supply", lat: 19.1551, lng: 72.8494, address: "sv road goregaon mumbai , goregaon, 400062, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2228724530", fuel: "PetrolDiesel", image: "",},
+        { name: "Hpcl - Borivali Petrol Supply", lat: 19.2288, lng: 72.8544, address: "sv road borivali mumbai , borivali, 400092, maharashtra", hours: "06:00 AM - 11:59 PM", contact: "2228053849", fuel: "PetrolDiesel", image: "",},
+    ];
+    
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = deg2rad(lat2 - lat1);
+        const dLon = deg2rad(lon2 - lon1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c;
+        return d;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+    }
+
+    function displayStations(position) {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+        const stationsList = document.getElementById('stations-list');
+        stationsList.innerHTML = '';
+
+        petrolPumps.forEach(station => {
+            const distance = calculateDistance(userLat, userLng, station.lat, station.lng);
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <div class="station-name">${station.name}</div>
+                <div class="station-address">${station.address}</div>
+                <div class="station-hours">${station.hours}</div>
+                <div class="station-contact">${station.contact}</div>
+                <div class="station-fuel">Fuel: ${station.fuel}</div>
+                <div class="station-distance">Distance: ${distance.toFixed(2)} km</div>
+                <div class="get-directions">
+                    <a href="http://maps.google.com/maps?saddr=${userLat},${userLng}&daddr=${station.lat},${station.lng}" target="_blank">Get Directions</a>
+                </div>
+            `;
+            stationsList.appendChild(listItem);
+        });
+
+        document.getElementById('status').textContent = 'Fuel stations found!';
+    }
+
+    function showError(error) {
+        let errorMessage = '';
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                errorMessage = "Location access denied.";
+                break;
+            case error.POSITION_UNAVAILABLE:
+                errorMessage = "Location unavailable.";
+                break;
+            case error.TIMEOUT:
+                errorMessage = "Location request timed out.";
+                break;
+            case error.UNKNOWN_ERROR:
+                errorMessage = "An unknown error occurred.";
+                break;
+        }
+        document.getElementById('status').textContent = errorMessage;
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(displayStations, showError);
+    } else {
+        document.getElementById('status').textContent = "Geolocation is not supported.";
+    }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
